@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>졸업 이수 학점 계산기 (복수전공 4개 학과 완벽 지원)</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; font-weight: 800; }
+        
+        .config-box { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 20px; justify-content: center; align-items: center; }
+        .config-box select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 10px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .section-title { font-size: 1.2em; font-weight: bold; color: #2980b9; }
+        .sub-header { margin-top: 15px; background: #f0f8ff; padding: 10px; border-radius: 5px; font-weight: bold; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
+        
+        button.add-btn { background: #3498db; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
+        button.add-btn:hover { background: #2980b9; }
+        button.reset-btn { background: #e74c3c; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        button.reset-btn:hover { background: #c0392b; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; }
+        th { background: #f8f9fa; color: #555; font-size: 0.9em; }
+        
+        select, input[type="text"], input[type="number"] { width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; text-align: center; }
+        .other-input { margin-top: 8px; border: 1px dashed #3498db; background-color: #f0f8ff; display: none; }
+        
+        .checkbox-group { display: flex; gap: 20px; justify-content: center; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 8px; font-weight: bold; }
+        .checkbox-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+
+        .auto-domain { font-weight: bold; color: #8e44ad; background: #f9ebff; padding: 4px 10px; border-radius: 12px; display: inline-block; }
+
+        .result-panel { background: #2c3e50; color: white; padding: 25px; border-radius: 10px; margin-top: 35px; }
+        .result-title { font-size: 1.2em; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
+        .highlight { color: #f1c40f; font-weight: bold; font-size: 1.3em; }
+        .free-credit { color: #3498db; font-weight: bold; }
+        
+        .status-box { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 8px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .status-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; }
+        .status-item h4 { margin: 0 0 10px 0; color: #3498db; border-bottom: 1px dashed #555; padding-bottom: 5px; }
+        
+        .pass { color: #2ecc71; font-weight: bold; }
+        .fail { color: #e74c3c; font-weight: bold; }
+        .missing-list { color: #ff9ff3; font-size: 0.9em; margin-top: 5px; display: block; }
+        option:disabled { color: #ccc; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎓 졸업 이수 학점 계산기</h2>
+
+    <div class="config-box">
+        <div>
+            <label>학번 구분: </label>
+            <select id="studentYear" onchange="handleYearChange()">
+                <option value="2024">24학번 이후</option>
+                <option value="2023">24학번 이전</option>
+            </select>
+        </div>
+        <div>
+            <label>복수전공 여부: </label>
+            <select id="isDoubleMajor" onchange="toggleDoubleMajor()">
+                <option value="no">단일전공 (목표: 140학점)</option>
+                <option value="computer">복수전공 - 컴퓨터교육 (목표: 156학점)</option>
+                <option value="ethics">복수전공 - 윤리교육 (목표: 156학점)</option>
+                <option value="social">복수전공 - 일반사회교육 (목표: 156학점)</option>
+                <option value="geography">복수전공 - 지리교육 (목표: 156학점)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section-header"><div class="section-title">📚 교양 영역</div></div>
+
+    <div class="sub-header"><span>🌱 청람인성 (과목당 1학점, 3과목 필수 체크)</span></div>
+    <div class="checkbox-group">
+        <label><input type="checkbox" class="inseong-chk" value="교원 인성의 실천" data-credit="1" onchange="calculate()"> 교원 인성의 실천</label>
+        <label><input type="checkbox" class="inseong-chk" value="더불어 사는 시민 인성" data-credit="1" onchange="calculate()"> 더불어 사는 시민 인성</label>
+        <label><input type="checkbox" class="inseong-chk" value="청람인의 책임과 실천" data-credit="1" onchange="calculate()"> 청람인의 책임과 실천</label>
+    </div>
+
+    <div class="sub-header">
+        <span>🚀 선택 교양 (역량 & 탐구 통합)</span>
+        <button class="add-btn" onclick="addGyoyangRow()">+ 추가</button>
+    </div>
+    <table>
+        <colgroup><col width="45%"><col width="30%"><col width="25%"></colgroup>
+        <thead><tr><th>과목 선택</th><th>분류 영역 (자동)</th><th>학점</th></tr></thead>
+        <tbody id="combinedGyoyangTable"></tbody>
+    </table>
+
+    <div class="section-header">
+        <div class="section-title">🏫 교직 영역 (과목당 2학점)</div>
+        <button class="add-btn" onclick="addTeachingRow()">+ 추가</button>
+    </div>
+    <table>
+        <colgroup><col width="75%"><col width="25%"></colgroup>
+        <thead><tr><th>과목 선택</th><th>학점</th></tr></thead>
+        <tbody id="teachingTable"></tbody>
+    </table>
+
+    <div class="section-header">
+        <div class="section-title">📖 전공 영역 (역사교육, 과목당 3학점)</div>
+        <button class="add-btn" onclick="addMajorRow()">+ 추가</button>
+    </div>
+    <table>
+        <colgroup><col width="75%"><col width="25%"></colgroup>
+        <thead><tr><th>과목 선택</th><th>학점</th></tr></thead>
+        <tbody id="majorTable"></tbody>
+    </table>
+
+    <div id="doubleMajorSection" style="display:none;">
+        <div class="section-header">
+            <div class="section-title" id="doubleMajorTitleSpan">💻 복수전공 영역</div>
+            <button class="add-btn" onclick="addDoubleMajorRow()">+ 추가</button>
+        </div>
+        <table>
+            <colgroup><col width="75%"><col width="25%"></colgroup>
+            <thead><tr><th>과목 선택</th><th>학점</th></tr></thead>
+            <tbody id="doubleMajorTable"></tbody>
+        </table>
+    </div>
+
+    <div class="result-panel">
+        <div class="result-title">
+            <span>📊 졸업 이수 현황 및 진단</span>
+            <button class="reset-btn" onclick="resetData()">기록 초기화</button>
+        </div>
+        <div class="grid-3">
+            <div>목표 총 학점<br><span id="targetTotal" class="highlight" style="color:white;">140</span>점</div>
+            <div>현재 이수 학점<br><span id="currentTotal" class="highlight">0</span>점</div>
+            <div>자유(잔여) 학점<br><span id="freeTotal" class="free-credit">0</span>점</div>
+        </div>
+        <div style="text-align: center; margin-top: 20px; font-size: 1.5em;" id="finalResultText">남은 학점: 140점</div>
+        <div class="status-box" id="diagnosticStatus"></div>
+    </div>
+</div>
+
+<script>
+    const sortKor = (a, b) => a.localeCompare(b, 'ko');
+    const sortObjKor = (a, b) => a.교과목명.localeCompare(b.교과목명, 'ko');
+
+    const rawGyoyangData = {
+      "창의융합": [{"교과목명": "(IB PYP) IB 철학과 교수학습 원리 이해", "학점": 3}, {"교과목명": "(MYP/DP) IB 교수학습론", "학점": 3}, {"교과목명": "(MYP/DP) IB 교육의 이해", "학점": 3}, {"교과목명": "3D 프린터 활용 인공지능 로봇 메이커", "학점": 3}, {"교과목명": "AI 디지털 기반 융합교육 디자인", "학점": 3}, {"교과목명": "AI로 여는 융합 창업과 창직", "학점": 3}, {"교과목명": "고전문학과인문학적상상력", "학점": 3}, {"교과목명": "교사 임용 외 진로 탐색", "학점": 3}, {"교과목명": "교사를 위한 인공지능교육", "학점": 3}, {"교과목명": "교양프랑스어회화", "학점": 3}, {"교과목명": "기초학력의 이해", "학점": 3}, {"교과목명": "놀이로 배우는 디지털 문해교육", "학점": 3}, {"교과목명": "다큐멘터리 영화 제작을 통한 삶의 이해", "학점": 3}, {"교과목명": "대중매체와 고전", "학점": 3}, {"교과목명": "독서토론을 위한 이야기책 읽기", "학점": 3}, {"교과목명": "디지털 시대 융합교육", "학점": 3}, {"교과목명": "미래교육디자인", "학점": 3}, {"교과목명": "발달단계별창의·인성융합교육방법론", "학점": 3}, {"교과목명": "발명교육의 이론과 실제", "학점": 3}, {"교과목명": "생성형 AI를 활용한 인문사회의 이해", "학점": 3}, {"교과목명": "에듀테크 기반 디지털 보훈교육 연구", "학점": 3}, {"교과목명": "영상으로보는20세기아시아사", "학점": 3}, {"교과목명": "영화와 민주주의 역사", "학점": 3}, {"교과목명": "예술로 하는 공동체 교육", "학점": 2}, {"교과목명": "유쾌한 상상표현과 컴퓨팅 사고력", "학점": 2}, {"교과목명": "융합교육 교수법", "학점": 3}, {"교과목명": "융합교육의 실제", "학점": 3}, {"교과목명": "융합교육의 이해", "학점": 3}, {"교과목명": "음악과사회의이해", "학점": 2}, {"교과목명": "이야기 속의 한 문장", "학점": 3}, {"교과목명": "인간과환경", "학점": 3}, {"교과목명": "초등 소프트웨어 교육과 컴퓨팅 사고", "학점": 3}, {"교과목명": "컴퓨팅사고와 문제해결", "학점": 3}, {"교과목명": "파리 여행으로 만나는 프랑스 문화", "학점": 3}, {"교과목명": "프랑스에서 살아남기: 언어와 문화", "학점": 3}, {"교과목명": "피지컬 컴퓨팅의 이해와 실제", "학점": 3}].sort(sortObjKor),
+      "안전 보건 환경": [{"교과목명": "교육연극과 삶의 이야기", "학점": 3}, {"교과목명": "기후위기 대응능력과 AI 활용", "학점": 3}, {"교과목명": "기후위기와 미래사회", "학점": 3}, {"교과목명": "아웃도어 교육의 체험과 실천", "학점": 3}, {"교과목명": "안전·보건의 이해와 실제", "학점": 3}, {"교과목명": "안전과 보건, 인문학에게 묻다", "학점": 3}, {"교과목명": "영화로 보는 학교정신건강 이야기", "학점": 3}, {"교과목명": "예비교사를 위한 환경교육의 이론과 실제", "학점": 3}, {"교과목명": "재난안전과 위기관리능력", "학점": 3}, {"교과목명": "초등 예비교사를 위한 환경교육의 이론과 실제", "학점": 3}, {"교과목명": "학교폭력법과 정책", "학점": 3}, {"교과목명": "환경과교육의대화", "학점": 3}, {"교과목명": "환경과지속가능한삶", "학점": 3}].sort(sortObjKor),
+      "다문화 시민 소통 상담": [{"교과목명": "K-Culture로 만나는 한국어 교육", "학점": 3}, {"교과목명": "“혐중(嫌中)”과 문화적 상대성", "학점": 3}, {"교과목명": "교사의생활화법", "학점": 3}, {"교과목명": "교실 속 팔레트, 반편견교육의 실천", "학점": 3}, {"교과목명": "교양 중국어 I", "학점": 3}, {"교과목명": "교양독일어", "학점": 3}, {"교과목명": "교양영어회화Ⅰ", "학점": 3}, {"교과목명": "교양영어회화Ⅱ", "학점": 3}, {"교과목명": "교양프랑스어 I", "학점": 3}, {"교과목명": "국제이주와 사회통합", "학점": 3}, {"교과목명": "다문화 시대 언어와 문학 교육", "학점": 3}, {"교과목명": "동화로 만나는 시민교육", "학점": 3}, {"교과목명": "삶의 변화를 위한 글쓰기 치료", "학점": 3}, {"교과목명": "상담매체를활용한소통의대화기술", "학점": 3}, {"교과목명": "세계가 주목한 이태석 리더십", "학점": 3}, {"교과목명": "아시아공동체의 이해", "학점": 3}, {"교과목명": "아시아사회의이해", "학점": 3}, {"교과목명": "영어로 배우는 프랑스어", "학점": 3}, {"교과목명": "영화속아동청소년심리학", "학점": 2}, {"교과목명": "이민정책론", "학점": 3}, {"교과목명": "인구와가치교육", "학점": 3}, {"교과목명": "치유와성장을위한영화치료", "학점": 2}, {"교과목명": "치유와성장을위한영화치료2", "학점": 2}, {"교과목명": "통합체육의 이론과 실제", "학점": 3}, {"교과목명": "평화로 가는 길-소통과 화합의 현장 체험", "학점": 3}, {"교과목명": "학교 가족상담의 이해와 실제", "학점": 3}, {"교과목명": "학교민주주의와시민교육", "학점": 3}, {"교과목명": "학교진로상담의이해", "학점": 3}, {"교과목명": "학생과 소통하는 행복한 학급만들기", "학점": 3}].sort(sortObjKor),
+      "인간과 삶": [{"교과목명": "AI시대 교사를 위한 실천 윤리", "학점": 3}, {"교과목명": "교사와 학생의 동반성장", "학점": 3}, {"교과목명": "교육사상의 이해", "학점": 3}, {"교과목명": "교직과교사", "학점": 3}, {"교과목명": "노년학개론", "학점": 3}, {"교과목명": "대중매체로 만나는 아동인권", "학점": 3}, {"교과목명": "동아시아의역사와여행", "학점": 3}, {"교과목명": "맘편한 심리상담 입문", "학점": 3}, {"교과목명": "미디어로윤리하기·인성발달시키기", "학점": 3}, {"교과목명": "사진과 인간심리", "학점": 3}, {"교과목명": "생활독일어", "학점": 3}, {"교과목명": "생활속의클래식", "학점": 2}, {"교과목명": "성인학습 및 상담", "학점": 3}, {"교과목명": "성인학습이론", "학점": 3}, {"교과목명": "세계사 속의 재판", "학점": 3}, {"교과목명": "수학교육의 세계", "학점": 3}, {"교과목명": "심리학의이해", "학점": 3}, {"교과목명": "언어와 현대사회", "학점": 3}, {"교과목명": "여성과역사", "학점": 3}, {"교과목명": "연인관계심리학", "학점": 2}, {"교과목명": "영화로 알아보는 직업", "학점": 3}, {"교과목명": "영화와 문학 장르를 융합한 보훈 이야기", "학점": 3}, {"교과목명": "예술 속 사랑, 관계, 소통 이야기", "학점": 2}, {"교과목명": "올바른 글쓰기 윤리", "학점": 3}, {"교과목명": "유아교육의이해", "학점": 3}, {"교과목명": "이미지로 보는 세계사", "학점": 3}, {"교과목명": "인권, 정부, 시장", "학점": 3}, {"교과목명": "인권과 인권정책", "학점": 3}, {"교과목명": "지도로 보는 지속가능개발", "학점": 3}, {"교과목명": "지도로 보는 지속가능발전", "학점": 3}, {"교과목명": "철학사 산책", "학점": 3}, {"교과목명": "청렴: 청춘의 염치 챙기기와 교사 되기", "학점": 2}, {"교과목명": "평생교육개론", "학점": 3}, {"교과목명": "평생교육경영론", "학점": 3}, {"교과목명": "학부모이해및상담", "학점": 3}, {"교과목명": "행복 인문학", "학점": 3}, {"교과목명": "행복을 위한 윤리와 심리", "학점": 3}, {"교과목명": "현대사회와부모교육", "학점": 3}].sort(sortObjKor),
+      "사회와 문화": [{"교과목명": "Modern Life: 근대사회와 나", "학점": 3}, {"교과목명": "결혼과가족", "학점": 3}, {"교과목명": "경제와생활", "학점": 3}, {"교과목명": "교사를위한한자와한문", "학점": 3}, {"교과목명": "국어 어휘의 올바른 이해 및 활용", "학점": 3}, {"교과목명": "내용중심 영어수업 연습", "학점": 3}, {"교과목명": "노래의문화사", "학점": 3}, {"교과목명": "다양한 영어 글쓰기", "학점": 3}, {"교과목명": "대중문학의이해", "학점": 3}, {"교과목명": "독서워크숍", "학점": 3}, {"교과목명": "독일문화의이해", "학점": 3}, {"교과목명": "독일어권문화와생활", "학점": 3}, {"교과목명": "동·서양 건축과 역사", "학점": 3}, {"교과목명": "동아시아교류사", "학점": 3}, {"교과목명": "동아시아의 차 교육", "학점": 3}, {"교과목명": "모두를 위한 영어발음교실", "학점": 3}, {"교과목명": "문화로 읽는 한자", "학점": 3}, {"교과목명": "문화와생활", "학점": 3}, {"교과목명": "법학개론", "학점": 3}, {"교과목명": "보훈과 여행의 만남: 여행의 시대, 보훈을 만나다", "학점": 3}, {"교과목명": "비밀의 정원: 정원, 문화 그리고 교육", "학점": 3}, {"교과목명": "사회적경제와 사회혁신", "학점": 3}, {"교과목명": "사회학으로의 초대", "학점": 3}, {"교과목명": "서양근대의형성과발전", "학점": 3}, {"교과목명": "세계와 문화를 보는 창, 인문학", "학점": 3}, {"교과목명": "세계의 그림책 탐구", "학점": 3}, {"교과목명": "시민이 알아야 할 인공지능윤리", "학점": 3}, {"교과목명": "신화, 상상력의 세계", "학점": 3}, {"교과목명": "아동문학과교육", "학점": 3}, {"교과목명": "언어학개론", "학점": 3}, {"교과목명": "영상으로 보는 한국근현대사", "학점": 3}, {"교과목명": "영화로 보는 독일청년문화와 사회", "학점": 3}, {"교과목명": "예비교사를 위한 학교와 지역사회 연계 평생교육", "학점": 3}, {"교과목명": "예비교사를위한우리말바로쓰기", "학점": 3}, {"교과목명": "예비교사와 함께하는 보훈교육", "학점": 3}, {"교과목명": "우리 땅의 어제와 오늘", "학점": 3}, {"교과목명": "인간과윤리", "학점": 3}, {"교과목명": "자연환경과지역이해", "학점": 3}, {"교과목명": "정부의 이해", "학점": 3}, {"교과목명": "콘텐츠로 배우는 기초 일본어", "학점": 3}, {"교과목명": "평생학습과 대중문화", "학점": 3}, {"교과목명": "학교민주주의살리기", "학점": 3}, {"교과목명": "학교와 법", "학점": 3}, {"교과목명": "한국민속의세계", "학점": 3}, {"교과목명": "한국사의새로운이해", "학점": 3}, {"교과목명": "한국어교육을 위한 한국문화의 이해", "학점": 3}, {"교과목명": "한국의문화유산", "학점": 3}, {"교과목명": "한국인의언어문화", "학점": 3}, {"교과목명": "한국현대사의이해", "학점": 3}, {"교과목명": "행복을 위한 인성교육", "학점": 3}, {"교과목명": "행정법의이해", "학점": 3}, {"교과목명": "행정의 이해", "학점": 3}, {"교과목명": "헌법의이해", "학점": 3}, {"교과목명": "현대 정치의 이해", "학점": 3}, {"교과목명": "현대문학의이해", "학점": 3}, {"교과목명": "현대사회론", "학점": 3}, {"교과목명": "현대사회와 경제", "학점": 3}, {"교과목명": "현대사회의 윤리적 쟁점", "학점": 3}].sort(sortObjKor),
+      "자연과 과학": [{"교과목명": "3D프린팅 기술의 이해와 활용", "학점": 3}, {"교과목명": "A.I.를 활용한 컨텐츠 제작", "학점": 3}, {"교과목명": "ICT교육", "학점": 3}, {"교과목명": "게임이론과응용", "학점": 3}, {"교과목명": "기초수학", "학점": 3}, {"교과목명": "미래를 읽는 SF문학과 상상력", "학점": 3}, {"교과목명": "새콤달콤 오렌지로 만나는 인공지능", "학점": 3}, {"교과목명": "소프트웨어와 초등교육", "학점": 3}, {"교과목명": "수학으로 바라보는 세상", "학점": 3}, {"교과목명": "수학의세계", "학점": 3}, {"교과목명": "스마트교육 콘텐츠 개발", "학점": 3}, {"교과목명": "스마트교육의 이해", "학점": 3}, {"교과목명": "웹과 모바일 홈페이지의 이해와 제작", "학점": 3}, {"교과목명": "위험한 지구, 안전한 지구", "학점": 3}, {"교과목명": "인공지능 디지털 융합을 위한 에듀테크", "학점": 3}, {"교과목명": "정보기술과미래교육", "학점": 3}, {"교과목명": "정보윤리", "학점": 3}, {"교과목명": "정보통신융합기술", "학점": 3}, {"교과목명": "컴퓨터의이해와활용", "학점": 3}, {"교과목명": "컴퓨터프로그래밍의이해", "학점": 3}, {"교과목명": "컴퓨팅교육개론", "학점": 3}].sort(sortObjKor),
+      "예술과 스포츠": [{"교과목명": "AI기반 미디어·예술 이해와 창작Ⅰ", "학점": 3}, {"교과목명": "AI기반 미디어·예술 이해와 창작", "학점": 3}, {"교과목명": "교양합창", "학점": 2}, {"교과목명": "국악감상", "학점": 2}, {"교과목명": "꿈꾸던 수업 e-스포츠 게임", "학점": 1}, {"교과목명": "동양미술개론", "학점": 3}, {"교과목명": "디자인과생활", "학점": 3}, {"교과목명": "미술의이해", "학점": 3}, {"교과목명": "바람을 가르며 파도를 타는 힐링 서핑", "학점": 1}, {"교과목명": "발레 리터러시", "학점": 2}, {"교과목명": "사운드 스케이프(소리풍경)로 이해하는 세계", "학점": 2}, {"교과목명": "생활과 수영", "학점": 1}, {"교과목명": "생활과 스노우보드", "학점": 1}, {"교과목명": "생활과골프", "학점": 1}, {"교과목명": "생활과농구", "학점": 1}, {"교과목명": "생활과배드민턴", "학점": 1}, {"교과목명": "생활과스키", "학점": 1}, {"교과목명": "생활과요가", "학점": 1}, {"교과목명": "생활과탁구", "학점": 1}, {"교과목명": "생활과테니스", "학점": 1}, {"교과목명": "세계미술산책", "학점": 3}, {"교과목명": "스키여행", "학점": 1}, {"교과목명": "스트레스를 날리는 사이다 락볼링", "학점": 1}, {"교과목명": "영화관에서 만난 음악", "학점": 2}, {"교과목명": "오페라의이해", "학점": 2}, {"교과목명": "왕초보 스노보드 정복기", "학점": 1}, {"교과목명": "월드뮤직의이해", "학점": 2}, {"교과목명": "음악감상", "학점": 2}, {"교과목명": "음악으로 배우는 독일어", "학점": 3}, {"교과목명": "초등교양합창", "학점": 1}, {"교과목명": "특수교육대상 학생을 위한 예술교육", "학점": 2}, {"교과목명": "프랑스영화와의만남", "학점": 3}, {"교과목명": "프리미어리그 풋살", "학점": 1}, {"교과목명": "한국음악의이해", "학점": 2}, {"교과목명": "힐링을 선물하는 댄스", "학점": 1}].sort(sortObjKor)
+    };
+
+    const courseDict = {};
+    for (const [domain, courses] of Object.entries(rawGyoyangData)) {
+        courses.forEach(c => { courseDict[c.교과목명] = { domain: domain, credit: c.학점 }; });
+    }
+
+    const yeokryangDomains = ["창의융합", "안전 보건 환경", "다문화 시민 소통 상담"];
+    const tamguDomains = ["인간과 삶", "사회와 문화", "자연과 과학", "예술과 스포츠"];
+
+    // 전공/교직 데이터
+    const teachMandatory = ["특수교육학개론", "교직실무", "학교폭력예방 및 학생의 이해", "디지털 교육"].sort(sortKor);
+    const teachTheory = ["교육학개론", "교육철학 및 교육사", "교육심리학", "교육과정", "교육평가", "교육방법 및 교육공학", "교육사회학", "생활지도", "교육행정 및 경영"].sort(sortKor);
+    const majorBasic = ["역사교육론", "역사과교수법", "역사과논술", "역사학개론", "동양사사료강독", "한국고대사", "한국사회경제사", "서양근대사", "한국현대사"].sort(sortKor);
+    const majorSelect = ["한국사개론", "한국사교재론", "세계사교재론", "한국사사료강독", "서양사사료강독", "동양사개론", "서양사개론", "한국중세사", "한국근대사", "서양고대사", "동아시아의 역사와 문화", "답사의 이론과 실제", "한국근세사", "한국 사상 문화사", "한국대외교류사", "서양현대사", "서양중세사", "동아시아고대사", "동아시아중세사", "동아시아근세사", "동아시아근대사", "일본사"].sort(sortKor);
+
+    // 복수전공 (컴퓨터교육과)
+    const doubleEduBasic = ["정보교과교육론"].sort(sortKor);
+    const doubleEduSelect = ["정보교과교재연구", "정보교과논술개론"].sort(sortKor);
+    const doubleContentBasic = ["C프로그래밍", "데이터베이스", "논리회로", "소프트웨어공학", "알고리즘", "운영체제", "이산수학", "인공지능", "자료구조", "정보통신윤리", "컴퓨터구조", "컴퓨터네트워크"].sort(sortKor);
+    const doubleContentSelect = ["AI기초프로그래밍", "AI심화프로그래밍", "AI융합교육프로젝트", "교육용프로그래밍", "멀티미디어", "소프트웨어교육Ⅰ", "소프트웨어교육Ⅱ", "인공지능과 미래교육", "인터넷", "저작도구", "정보통신", "컴퓨터개론", "프로그래밍Ⅰ", "프로그래밍Ⅱ", "피지컬컴퓨팅", "피지컬컴퓨팅기초"].sort(sortKor);
+
+    // 복수전공 (윤리교육과)
+    const ethicsEduMandatory = ["도덕과교육론", "도덕과교재론", "윤리와논술"].sort(sortKor);
+    const ethicsContentGroup1 = ["윤리학개론", "동양윤리사상", "서양고중세윤리사상", "한국윤리사상", "서양윤리고전강독", "서양근대윤리사상"].sort(sortKor);
+    const ethicsContentGroup2 = ["민주주의론", "통일교육론", "시민윤리교육론", "도덕심리학", "도덕사회학"].sort(sortKor);
+    const ethicsContentSelect = ["가치교육론", "국제문제와윤리", "뇌기반도덕교육", "동양윤리고전강독", "불교와 한국사상", "불교윤리", "사회사상사", "사회윤리와 사회정의", "생태철학과 환경윤리", "서양고중세철학", "서양근현대철학", "윤리학특강", "응용윤리", "인공지능윤리와 도덕과 교육", "정치철학", "제자백가사상", "평화교육", "한국고중세철학", "한국성리학특강", "현대윤리학의동향", "인성교육론"].sort(sortKor);
+
+    // 복수전공 (일반사회교육과)
+    const socEduMandatory = ["사회과교육론", "일반사회와논술"].sort(sortKor);
+    const socEduSelect = ["일반사회교수론", "일반사회교재론"].sort(sortKor);
+    const socContentBasic = ["정치와사회", "경제와사회", "문화와사회", "법과사회", "사회과학방법론", "인간과사회", "인간과행정", "시민교육과사회윤리"].sort(sortKor);
+    const socContentSelect = ["가족과 생애", "거시경제학", "경제학특강", "미시경제학", "민법총칙", "법학특강", "사회과 교사의 세상읽기", "사회불평등과 복지", "사회심리학", "사회학이론", "사회학특강", "사회학특강Ⅱ", "성격심리학", "인간심리의이해", "일반사회교육특강", "일반사회와 사회과학", "정치학특강", "한국사회론", "한국사회의 이해", "한국정치론", "헌법"].sort(sortKor);
+
+    // 복수전공 (지리교육과)
+    const geoEduMandatory = ["지리교육론", "지리수업설계론", "지리인식논리와논술"].sort(sortKor);
+    const geoContentBasic = ["인문지리학및실습", "자연지리학및실습", "한국지리특강및실습", "세계지리", "문화지리학", "경제지리학", "지형학및실습", "기후학및실습", "도시지리학"].sort(sortKor);
+    const geoContentSelect = ["공간분석론", "기후지형학및실습", "농업지리학", "사회지리학", "아시아지리", "여행지리", "여행지리학", "역사지리학", "인구지리학", "제3세계의이해", "지도학및실습", "지리과지도론", "지리적 사고와 논리", "지리조사법및실습", "지역개발론", "탐험과 항해지도의 인문학", "탐험의 지도를 넘어 공간의 인문학으로", "환경지리학및실습"].sort(sortKor);
+
+    // --- 학번 변경 시 교직 목록 업데이트 ---
+    function handleYearChange() {
+        updateTeachingOptions();
+        calculate();
+    }
+
+    function updateTeachingOptions() {
+        const year = document.getElementById("studentYear").value;
+        const selects = document.querySelectorAll(".t-select");
+        
+        selects.forEach(select => {
+            const currentVal = select.value;
+            let options = `<option value="">-- 과목 선택 --</option><optgroup label="[교직소양 - 필수]">`;
+            teachMandatory.forEach(m => {
+                if (m === "디지털 교육" && year === "2023") return;
+                options += `<option value="${m}">${m}</option>`;
+            });
+            options += `</optgroup><optgroup label="[교직이론 - 9택6]">`;
+            teachTheory.forEach(t => options += `<option value="${t}">${t}</option>`);
+            options += `</optgroup>`;
+            
+            select.innerHTML = options;
+            
+            if (currentVal === "디지털 교육" && year === "2023") { select.value = ""; } 
+            else { select.value = currentVal; }
+        });
+        updateSelects();
+    }
+
+    // --- DOM 조작 및 이벤트 ---
+    function toggleDoubleMajor() {
+        const isDouble = document.getElementById("isDoubleMajor").value;
+        const section = document.getElementById("doubleMajorSection");
+        const titleSpan = document.getElementById("doubleMajorTitleSpan");
+        
+        if (isDouble === "no") {
+            section.style.display = "none";
+        } else {
+            section.style.display = "block";
+            if (isDouble === "computer") titleSpan.innerText = "💻 복수전공 영역 (컴퓨터교육, 과목당 3학점)";
+            else if (isDouble === "ethics") titleSpan.innerText = "⚖️ 복수전공 영역 (윤리교육, 과목당 3학점)";
+            else if (isDouble === "social") titleSpan.innerText = "🌍 복수전공 영역 (일반사회교육, 과목당 3학점)";
+            else if (isDouble === "geography") titleSpan.innerText = "🗺️ 복수전공 영역 (지리교육, 과목당 3학점)";
+            
+            const tbody = document.getElementById("doubleMajorTable");
+            const currentRows = Array.from(tbody.querySelectorAll("tr")).map(tr => ({
+                sel: tr.querySelector(".d-select").value,
+                other: tr.querySelector(".other-input").value,
+                cred: tr.querySelector(".d-credit").value
+            }));
+            
+            tbody.innerHTML = "";
+            
+            if (currentRows.length > 0) {
+                currentRows.forEach(val => {
+                    addDoubleMajorRow();
+                    const tr = tbody.lastElementChild;
+                    const sel = tr.querySelector(".d-select");
+                    
+                    let optionExists = Array.from(sel.options).some(opt => opt.value === val.sel);
+                    
+                    sel.value = optionExists ? val.sel : "";
+                    handleCommonSelectChange(sel, 'd-credit');
+                    if (sel.value === "other") tr.querySelector(".other-input").value = val.other;
+                    tr.querySelector(".d-credit").value = val.cred || "0";
+                });
+            } else {
+                for(let i=0; i<3; i++) addDoubleMajorRow();
+            }
+        }
+        calculate();
+    }
+
+    function addGyoyangRow() {
+        const tbody = document.getElementById("combinedGyoyangTable");
+        let options = `<option value="">-- 전체 과목에서 선택 --</option>`;
+        for (const [domain, courses] of Object.entries(rawGyoyangData)) {
+            options += `<optgroup label="[${yeokryangDomains.includes(domain) ? '역량' : '탐구'}] ${domain}">`;
+            courses.forEach(c => options += `<option value="${c.교과목명}">${c.교과목명}</option>`);
+            options += `</optgroup>`;
+        }
+        options += `<option value="other">기타 (직접 입력)</option>`;
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>
+                <select class="g-select" onchange="handleGyoyangChange(this)">${options}</select>
+                <input type="text" class="other-input" placeholder="과목명 직접 입력">
+            </td>
+            <td>
+                <span class="auto-domain g-domain-text">-</span>
+                <select class="g-other-domain" style="display:none; margin-top:5px; padding:4px;" onchange="calculate()">
+                    <option value="">-- 영역 선택 --</option>
+                    <optgroup label="청람역량">${yeokryangDomains.map(d => `<option value="${d}">${d}</option>`).join('')}</optgroup>
+                    <optgroup label="청람탐구">${tamguDomains.map(d => `<option value="${d}">${d}</option>`).join('')}</optgroup>
+                </select>
+            </td>
+            <td><input type="number" class="g-credit" value="0" min="0" oninput="calculate()"></td>
+        `;
+        tbody.appendChild(tr); updateSelects();
+    }
+
+    function handleGyoyangChange(selectElem) {
+        const tr = selectElem.closest("tr");
+        const inputElem = selectElem.nextElementSibling;
+        const domainText = tr.querySelector(".g-domain-text");
+        const otherDomainSelect = tr.querySelector(".g-other-domain");
+        const creditInput = tr.querySelector(".g-credit");
+        const val = selectElem.value;
+
+        if (val === "other") {
+            inputElem.style.display = "block"; domainText.style.display = "none"; otherDomainSelect.style.display = "block";
+            if (creditInput.value === "0") creditInput.value = "3";
+        } else if (val !== "") {
+            inputElem.style.display = "none"; inputElem.value = ""; domainText.style.display = "inline-block"; otherDomainSelect.style.display = "none";
+            domainText.innerText = courseDict[val].domain; creditInput.value = courseDict[val].credit;
+        } else {
+            inputElem.style.display = "none"; inputElem.value = ""; domainText.style.display = "inline-block"; otherDomainSelect.style.display = "none";
+            domainText.innerText = "-"; creditInput.value = "0";
+        }
+        updateSelects(); calculate();
+    }
+
+    function addTeachingRow() {
+        const tbody = document.getElementById("teachingTable");
+        const year = document.getElementById("studentYear").value;
+        let options = `<option value="">-- 과목 선택 --</option><optgroup label="[교직소양 - 필수]">`;
+        teachMandatory.forEach(m => {
+            if (m === "디지털 교육" && year === "2023") return;
+            options += `<option value="${m}">${m}</option>`;
+        });
+        options += `</optgroup><optgroup label="[교직이론 - 9택6]">`;
+        teachTheory.forEach(t => options += `<option value="${t}">${t}</option>`);
+        options += `</optgroup>`;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><select class="t-select" onchange="updateSelects(); calculate()">${options}</select></td><td>2</td>`;
+        tbody.appendChild(tr); updateSelects();
+    }
+
+    function addMajorRow() {
+        const tbody = document.getElementById("majorTable");
+        let options = `<option value="">-- 과목 선택 --</option><optgroup label="[전공 필수]">`;
+        majorBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+        options += `</optgroup><optgroup label="[전공 선택]">`;
+        majorSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+        options += `</optgroup><optgroup label="[기타]"><option value="other">기타 (직접 입력)</option></optgroup>`;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><select class="m-select" onchange="handleCommonSelectChange(this)">${options}</select><input type="text" class="other-input" placeholder="과목명 직접 입력"></td><td><input type="number" class="m-credit" value="0" style="display:none;" oninput="calculate()">3</td>`;
+        tbody.appendChild(tr); updateSelects();
+    }
+
+    function addDoubleMajorRow() {
+        const doubleType = document.getElementById("isDoubleMajor").value;
+        const tbody = document.getElementById("doubleMajorTable");
+        let options = `<option value="">-- 과목 선택 --</option>`;
+        
+        if (doubleType === "computer") {
+            options += `<optgroup label="[교과교육 기본]">`;
+            doubleEduBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과교육 선택]">`;
+            doubleEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 기본 (택1 5개군 필수)]">`;
+            doubleContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 선택]">`;
+            doubleContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup>`;
+        } else if (doubleType === "ethics") {
+            options += `<optgroup label="[교과교육 필수]">`;
+            ethicsEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 기본 Group 1 (택 3)]">`;
+            ethicsContentGroup1.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 기본 Group 2 (택 3)]">`;
+            ethicsContentGroup2.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 선택]">`;
+            ethicsContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup>`;
+        } else if (doubleType === "social") {
+            options += `<optgroup label="[교과교육 필수]">`;
+            socEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과교육 선택 (택 1)]">`;
+            socEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 기본 (8과목 필수)]">`;
+            socContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 선택]">`;
+            socContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup>`;
+        } else if (doubleType === "geography") {
+            options += `<optgroup label="[교과교육 필수 (3과목)]">`;
+            geoEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 기본 (9과목 필수)]">`;
+            geoContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup><optgroup label="[교과내용 선택]">`;
+            geoContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+            options += `</optgroup>`;
+        }
+        
+        options += `<optgroup label="[기타]"><option value="other">기타 (직접 입력)</option></optgroup>`;
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td><select class="d-select" onchange="handleCommonSelectChange(this, 'd-credit')">${options}</select><input type="text" class="other-input" placeholder="과목명 직접 입력"></td><td><input type="number" class="d-credit" value="0" min="0" oninput="calculate()"></td>`;
+        tbody.appendChild(tr); updateSelects();
+    }
+
+    function handleCommonSelectChange(selectElem, creditClass="m-credit") {
+        const inputElem = selectElem.nextElementSibling;
+        const creditElem = selectElem.closest("tr").querySelector(`.${creditClass}`);
+        if (selectElem.value === "other") {
+            inputElem.style.display = "block";
+            if (creditElem && creditElem.value === "0") creditElem.value = "3";
+        } else if (selectElem.value !== "") {
+            inputElem.style.display = "none"; inputElem.value = "";
+            if (creditElem) creditElem.value = "3";
+        } else {
+            inputElem.style.display = "none"; inputElem.value = "";
+            if (creditElem) creditElem.value = "0";
+        }
+        updateSelects(); calculate();
+    }
+
+    function updateSelects() {
+        ['g-select', 't-select', 'm-select', 'd-select'].forEach(className => {
+            const selects = document.querySelectorAll(`.${className}`);
+            const selectedVals = Array.from(selects).map(s => s.value).filter(v => v !== "" && v !== "other");
+            selects.forEach(select => {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value !== "" && opt.value !== "other") {
+                        opt.disabled = selectedVals.includes(opt.value) && select.value !== opt.value;
+                    }
+                });
+            });
+        });
+    }
+
+    // --- LocalStorage ---
+    function saveData() {
+        const data = {
+            year: document.getElementById("studentYear").value,
+            doubleMajor: document.getElementById("isDoubleMajor").value,
+            inseong: Array.from(document.querySelectorAll(".inseong-chk")).map(chk => chk.checked),
+            gyoyang: Array.from(document.querySelectorAll("#combinedGyoyangTable tr")).map(tr => ({
+                course: tr.querySelector(".g-select").value, otherCourse: tr.querySelector(".other-input").value,
+                otherDomain: tr.querySelector(".g-other-domain").value, credit: tr.querySelector(".g-credit").value
+            })),
+            teaching: Array.from(document.querySelectorAll("#teachingTable tr")).map(tr => ({ course: tr.querySelector(".t-select").value })),
+            major: Array.from(document.querySelectorAll("#majorTable tr")).map(tr => ({
+                course: tr.querySelector(".m-select").value, otherCourse: tr.querySelector(".other-input").value
+            })),
+            double: Array.from(document.querySelectorAll("#doubleMajorTable tr")).map(tr => ({
+                course: tr.querySelector(".d-select").value, otherCourse: tr.querySelector(".other-input").value, credit: tr.querySelector(".d-credit").value
+            }))
+        };
+        localStorage.setItem("gradCalcData", JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem("gradCalcData");
+        if (saved) {
+            const data = JSON.parse(saved);
+            
+            document.getElementById("studentYear").value = data.year || "2024";
+            document.getElementById("isDoubleMajor").value = data.doubleMajor || "no";
+            
+            const chks = document.querySelectorAll(".inseong-chk");
+            if (data.inseong) data.inseong.forEach((checked, i) => { if (chks[i]) chks[i].checked = checked; });
+
+            document.getElementById("combinedGyoyangTable").innerHTML = ""; document.getElementById("teachingTable").innerHTML = "";
+            document.getElementById("majorTable").innerHTML = ""; document.getElementById("doubleMajorTable").innerHTML = "";
+
+            if (data.gyoyang && data.gyoyang.length > 0) {
+                data.gyoyang.forEach(row => {
+                    addGyoyangRow(); const tr = document.getElementById("combinedGyoyangTable").lastElementChild;
+                    const select = tr.querySelector(".g-select"); select.value = row.course; handleGyoyangChange(select);
+                    tr.querySelector(".other-input").value = row.otherCourse || ""; tr.querySelector(".g-other-domain").value = row.otherDomain || ""; tr.querySelector(".g-credit").value = row.credit || "0";
+                });
+            } else { for(let i=0; i<4; i++) addGyoyangRow(); }
+
+            updateTeachingOptions();
+
+            if (data.teaching && data.teaching.length > 0) {
+                data.teaching.forEach(row => {
+                    addTeachingRow(); const tr = document.getElementById("teachingTable").lastElementChild;
+                    tr.querySelector(".t-select").value = row.course || "";
+                });
+            } else { for(let i=0; i<3; i++) addTeachingRow(); }
+
+            if (data.major && data.major.length > 0) {
+                data.major.forEach(row => {
+                    addMajorRow(); const tr = document.getElementById("majorTable").lastElementChild;
+                    const select = tr.querySelector(".m-select"); select.value = row.course || ""; handleCommonSelectChange(select, "m-credit");
+                    tr.querySelector(".other-input").value = row.otherCourse || "";
+                });
+            } else { for(let i=0; i<3; i++) addMajorRow(); }
+
+            toggleDoubleMajor();
+            document.getElementById("doubleMajorTable").innerHTML = ""; 
+            if (data.double && data.double.length > 0 && data.doubleMajor !== "no") {
+                data.double.forEach(row => {
+                    addDoubleMajorRow(); const tr = document.getElementById("doubleMajorTable").lastElementChild;
+                    const select = tr.querySelector(".d-select"); 
+                    let optExists = Array.from(select.options).some(opt => opt.value === row.course);
+                    select.value = optExists ? row.course : ""; 
+                    handleCommonSelectChange(select, "d-credit");
+                    tr.querySelector(".other-input").value = row.otherCourse || ""; tr.querySelector(".d-credit").value = row.credit || "0";
+                });
+            } else if (data.doubleMajor !== "no") { for(let i=0; i<3; i++) addDoubleMajorRow(); }
+            
+        } else {
+            for(let i=0; i<4; i++) addGyoyangRow();
+            for(let i=0; i<3; i++) addTeachingRow(); addMajorRow(); addDoubleMajorRow();
+        }
+        updateSelects(); calculate(false);
+    }
+
+    function resetData() {
+        if(confirm("모든 입력 기록을 지우고 초기화하시겠습니까?")) { localStorage.removeItem("gradCalcData"); location.reload(); }
+    }
+
+    // --- 핵심 계산 및 진단 ---
+    function calculate(doSave = true) {
+        const year = document.getElementById("studentYear").value;
+        const isDouble = document.getElementById("isDoubleMajor").value;
+        const targetTotal = (isDouble !== "no") ? 156 : 140;
+        document.getElementById("targetTotal").innerText = targetTotal;
+
+        // 교양
+        let iCount = 0; document.querySelectorAll(".inseong-chk").forEach(chk => { if (chk.checked) iCount++; });
+        let ySum = 0, tqSum = 0; const ySet = new Set(), tqSet = new Set();
+        document.querySelectorAll("#combinedGyoyangTable tr").forEach(tr => {
+            const selectElem = tr.querySelector(".g-select");
+            let domain = ""; let credit = parseFloat(tr.querySelector(".g-credit").value) || 0;
+            if (selectElem.value === "other") domain = tr.querySelector(".g-other-domain").value;
+            else if (selectElem.value !== "") domain = courseDict[selectElem.value].domain;
+            if (domain && credit > 0) {
+                if (yeokryangDomains.includes(domain)) { ySum += credit; ySet.add(domain); }
+                else if (tamguDomains.includes(domain)) { tqSum += credit; tqSet.add(domain); }
+            }
+        });
+        const totalGyoyang = iCount + ySum + tqSum;
+
+        // 교직 & 역사전공
+        let tSum = 0, mSum = 0;
+        let teachManCount = 0, teachTheoCount = 0;
+        const selectedTeach = new Set(), selectedMajor = new Set();
+        
+        document.querySelectorAll(".t-select").forEach(el => {
+            if (el.value) { 
+                tSum += 2; selectedTeach.add(el.value); 
+                if(teachMandatory.includes(el.value)) teachManCount++;
+                if(teachTheory.includes(el.value)) teachTheoCount++;
+            }
+        });
+
+        let mBasicCount = 0, mSelectCount = 0;
+        document.querySelectorAll(".m-select").forEach(el => {
+            if (el.value) { 
+                mSum += 3; 
+                if(majorBasic.includes(el.value)) { mBasicCount++; selectedMajor.add(el.value); }
+                else mSelectCount++;
+            }
+        });
+
+        // 복수전공
+        let dSum = 0;
+        const selectedDouble = new Set();
+        document.querySelectorAll("#doubleMajorTable tr").forEach(tr => {
+            const val = tr.querySelector(".d-select").value;
+            const credit = parseFloat(tr.querySelector(".d-credit").value) || 0;
+            if (val) { dSum += credit; selectedDouble.add(val); }
+        });
+
+        const total = totalGyoyang + tSum + mSum + dSum;
+        document.getElementById("currentTotal").innerText = total;
+
+        const reqGyoyang = (year === "2024") ? 23 : 25;
+        const reqTeachTotal = (year === "2024") ? 26 : 24;
+        const reqTeachMan = (year === "2024") ? 4 : 3;
+        const reqDoubleTotal = 50; 
+        
+        let doubleDiagHtml = "";
+        let doublePass = false;
+
+        if (isDouble === "computer") {
+            let dEduCount = 0;
+            selectedDouble.forEach(val => { if (doubleEduBasic.includes(val) || doubleEduSelect.includes(val)) dEduCount++; });
+            
+            let missingDoubleBasicGroups = [];
+            if (!selectedDouble.has("C프로그래밍")) missingDoubleBasicGroups.push("C프로그래밍");
+            if (!(selectedDouble.has("알고리즘") || selectedDouble.has("이산수학") || selectedDouble.has("인공지능"))) missingDoubleBasicGroups.push("택1(알고리즘/이산수학/인공지능)");
+            if (!(selectedDouble.has("자료구조") || selectedDouble.has("데이터베이스"))) missingDoubleBasicGroups.push("택1(자료구조/데이터베이스)");
+            if (!(selectedDouble.has("운영체제") || selectedDouble.has("컴퓨터네트워크"))) missingDoubleBasicGroups.push("택1(운영체제/네트워크)");
+            if (!(selectedDouble.has("컴퓨터구조") || selectedDouble.has("논리회로"))) missingDoubleBasicGroups.push("택1(컴퓨터구조/논리회로)");
+            if (!(selectedDouble.has("정보통신윤리") || selectedDouble.has("소프트웨어공학"))) missingDoubleBasicGroups.push("택1(정보통신윤리/소프트웨어공학)");
+
+            const doubleBasicPass = (missingDoubleBasicGroups.length === 0);
+            let missingDoubleEdu = [...doubleEduBasic, ...doubleEduSelect].filter(m => !selectedDouble.has(m));
+            
+            doublePass = (dSum >= reqDoubleTotal) && (dEduCount >= 3) && doubleBasicPass;
+            
+            doubleDiagHtml = `
+                <div class="status-item">
+                    <h4>💻 복수전공 이수 진단 (컴퓨터교육)</h4>
+                    - 교과교육 (3과목 필수): ${dEduCount >= 3 ? '<span class="pass">[충족]</span>' : `<span class="fail">[${dEduCount}/3 미달]</span>`}
+                      ${missingDoubleEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingDoubleEdu.join(", ")})</span>` : ''}
+                    - 교과내용 기본 (필수 6개 군 충족): ${doubleBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                      ${missingDoubleBasicGroups.length > 0 ? `<span class="missing-list">(미이수: ${missingDoubleBasicGroups.join(", ")})</span>` : ''}
+                    - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${dSum >= reqDoubleTotal ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                </div>
+            `;
+        } else if (isDouble === "ethics") {
+            let eEduCount = 0; let missingEthicsEdu = [];
+            ethicsEduMandatory.forEach(m => {
+                if (selectedDouble.has(m)) eEduCount++; else missingEthicsEdu.push(m);
+            });
+            
+            let eGrp1Count = 0; ethicsContentGroup1.forEach(m => { if (selectedDouble.has(m)) eGrp1Count++; });
+            let eGrp2Count = 0; ethicsContentGroup2.forEach(m => { if (selectedDouble.has(m)) eGrp2Count++; });
+
+            const ethicsEduPass = (eEduCount === 3);
+            const ethicsGrp1Pass = (eGrp1Count >= 3);
+            const ethicsGrp2Pass = (eGrp2Count >= 3);
+            
+            doublePass = (dSum >= reqDoubleTotal) && ethicsEduPass && ethicsGrp1Pass && ethicsGrp2Pass;
+
+            doubleDiagHtml = `
+                <div class="status-item">
+                    <h4>⚖️ 복수전공 이수 진단 (윤리교육)</h4>
+                    - 교과교육 (필수 3과목): ${ethicsEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${eEduCount}/3 미달]</span>`}
+                      ${missingEthicsEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingEthicsEdu.join(", ")})</span>` : ''}
+                    - 교과내용 기본 Group 1 (택 3): ${ethicsGrp1Pass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${eGrp1Count}/3 미달]</span>`}
+                    - 교과내용 기본 Group 2 (택 3): ${ethicsGrp2Pass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${eGrp2Count}/3 미달]</span>`}
+                    - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${dSum >= reqDoubleTotal ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                </div>
+            `;
+        } else if (isDouble === "social") {
+            let missingSocEdu = [];
+            if (!selectedDouble.has("사회과교육론")) missingSocEdu.push("사회과교육론");
+            if (!selectedDouble.has("일반사회와논술")) missingSocEdu.push("일반사회와논술");
+            if (!(selectedDouble.has("일반사회교수론") || selectedDouble.has("일반사회교재론"))) missingSocEdu.push("택1(교수론/교재론)");
+
+            const socEduPass = (missingSocEdu.length === 0);
+            
+            let missingSocContentBasic = [];
+            let sBasicCount = 0;
+            socContentBasic.forEach(m => {
+                if (selectedDouble.has(m)) sBasicCount++;
+                else missingSocContentBasic.push(m);
+            });
+            const reqSocContentBasic = socContentBasic.length;
+            const socBasicPass = (sBasicCount === reqSocContentBasic);
+
+            doublePass = (dSum >= reqDoubleTotal) && socEduPass && socBasicPass;
+
+            doubleDiagHtml = `
+                <div class="status-item">
+                    <h4>🌍 복수전공 이수 진단 (일반사회교육)</h4>
+                    - 교과교육 (필수 3과목): ${socEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                      ${missingSocEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingSocEdu.join(", ")})</span>` : ''}
+                    - 교과내용 기본 (8과목 필수): ${socBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${sBasicCount}/${reqSocContentBasic} 미달]</span>`}
+                      ${missingSocContentBasic.length > 0 ? `<span class="missing-list">(미이수: ${missingSocContentBasic.join(", ")})</span>` : ''}
+                    - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${dSum >= reqDoubleTotal ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                </div>
+            `;
+        } else if (isDouble === "geography") {
+            let missingGeoEdu = [];
+            geoEduMandatory.forEach(m => { if (!selectedDouble.has(m)) missingGeoEdu.push(m); });
+            const geoEduPass = (missingGeoEdu.length === 0);
+
+            let missingGeoContentBasic = [];
+            let gBasicCount = 0;
+            geoContentBasic.forEach(m => {
+                if (selectedDouble.has(m)) gBasicCount++;
+                else missingGeoContentBasic.push(m);
+            });
+            const reqGeoContentBasic = geoContentBasic.length;
+            const geoBasicPass = (gBasicCount === reqGeoContentBasic);
+
+            doublePass = (dSum >= reqDoubleTotal) && geoEduPass && geoBasicPass;
+
+            doubleDiagHtml = `
+                <div class="status-item">
+                    <h4>🗺️ 복수전공 이수 진단 (지리교육)</h4>
+                    - 교과교육 (필수 3과목): ${geoEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                      ${missingGeoEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingGeoEdu.join(", ")})</span>` : ''}
+                    - 교과내용 기본 (9과목 필수): ${geoBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${gBasicCount}/${reqGeoContentBasic} 미달]</span>`}
+                      ${missingGeoContentBasic.length > 0 ? `<span class="missing-list">(미이수: ${missingGeoContentBasic.join(", ")})</span>` : ''}
+                    - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${dSum >= reqDoubleTotal ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                </div>
+            `;
+        }
+
+        const freeTotal = total - (Math.min(totalGyoyang, reqGyoyang) + Math.min(tSum, reqTeachTotal) + Math.min(mSum, 57) + (isDouble !== "no" ? Math.min(dSum, reqDoubleTotal) : 0));
+        document.getElementById("freeTotal").innerText = freeTotal > 0 ? freeTotal : 0;
+
+        const gyoyangAllPass = (iCount === 3) && (ySet.size >= 2 && ySum >= 6) && (tqSet.size === 4 && tqSum >= 14) && (totalGyoyang >= reqGyoyang);
+        const teachPass = (teachManCount >= reqTeachMan && teachTheoCount >= 6);
+        const majorPass = (mBasicCount === 9 && mSelectCount >= 10);
+
+        const allMet = gyoyangAllPass && teachPass && majorPass && (isDouble === "no" || doublePass);
+
+        const resText = document.getElementById("finalResultText");
+        if (total >= targetTotal) {
+            if (allMet) { resText.innerHTML = "🎉 완벽합니다! 모든 졸업 요건 달성!"; resText.style.color = "#2ecc71"; } 
+            else { resText.innerHTML = "⚠️ 총 학점은 넘었으나 미이수 필수 조건이 있습니다."; resText.style.color = "#e67e22"; }
+        } else {
+            resText.innerHTML = `졸업까지 남은 총 학점: ${targetTotal - total}점`; resText.style.color = "#f1c40f";
+        }
+
+        let missingMajorBasic = majorBasic.filter(m => !selectedMajor.has(m));
+
+        document.getElementById("diagnosticStatus").innerHTML = `
+            <div class="status-item">
+                <h4>📚 교양 이수 진단 (현재 ${totalGyoyang}/${reqGyoyang}학점)</h4>
+                - 청람인성 (3과목 필수): ${iCount === 3 ? '<span class="pass">[충족]</span>' : `<span class="fail">[${iCount}/3 미달]</span>`} <br>
+                - 청람역량 (2개 영역 이상 & 6학점 이상): ${(ySet.size >= 2 && ySum >= 6) ? '<span class="pass">[충족]</span>' : `<span class="fail">[현재 ${ySet.size}개 영역, ${ySum}학점]</span>`} <br>
+                - 청람탐구 (4개 영역 필수 & 14학점 이상): ${(tqSet.size === 4 && tqSum >= 14) ? '<span class="pass">[충족]</span>' : `<span class="fail">[현재 ${tqSet.size}개 영역, ${tqSum}학점]</span>`}
+            </div>
+            <div class="status-item">
+                <h4>🏫 교직 이수 진단</h4>
+                - 교직소양 필수 (${teachManCount}/${reqTeachMan}): ${teachManCount >= reqTeachMan ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'} <br>
+                - 교직이론 선택 (${teachTheoCount}/6과목 이상): ${teachTheoCount >= 6 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}
+            </div>
+            <div class="status-item">
+                <h4>📖 본 전공 이수 진단 (역사교육)</h4>
+                - 전공 필수 (${mBasicCount}/9과목): ${mBasicCount === 9 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}
+                  ${missingMajorBasic.length > 0 ? `<span class="missing-list">(미이수: ${missingMajorBasic.join(", ")})</span>` : ''}
+                - 전공 선택 (${mSelectCount}/10과목 이상): ${mSelectCount >= 10 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}
+            </div>
+            ${doubleDiagHtml}
+        `;
+
+        if(doSave) saveData();
+    }
+
+    window.onload = loadData;
+
+</script>
+
+</body>
+</html>
