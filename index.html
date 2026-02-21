@@ -240,10 +240,10 @@
             section.style.display = "none";
         } else {
             section.style.display = "block";
-            if (isDouble === "computer") titleSpan.innerText = "💻 복수전공 영역 (컴퓨터교육, 과목당 3학점)";
-            else if (isDouble === "ethics") titleSpan.innerText = "⚖️ 복수전공 영역 (윤리교육, 과목당 3학점)";
-            else if (isDouble === "social") titleSpan.innerText = "🌍 복수전공 영역 (일반사회교육, 과목당 3학점)";
-            else if (isDouble === "geography") titleSpan.innerText = "🗺️ 복수전공 영역 (지리교육, 과목당 3학점)";
+            if (isDouble === "computer") titleSpan.innerText = "💻 복수전공 영역 (컴퓨터)";
+            else if (isDouble === "ethics") titleSpan.innerText = "⚖️ 복수전공 영역 (윤리교육)";
+            else if (isDouble === "social") titleSpan.innerText = "🌍 복수전공 영역 (일반사회)";
+            else if (isDouble === "geography") titleSpan.innerText = "🗺️ 복수전공 영역 (지리교육)";
             
             const tbody = document.getElementById("doubleMajorTable");
             const currentRows = Array.from(tbody.querySelectorAll("tr")).map(tr => ({
@@ -617,7 +617,7 @@
             
             doubleDiagHtml = `
                 <div class="status-item">
-                    <h4>💻 복수전공 이수 진단 (컴퓨터교육)</h4>
+                    <h4>💻 복수전공 이수 진단 (컴퓨터)</h4>
                     - 교과교육 (3과목 필수): ${dEduCount >= 3 ? '<span class="pass">[충족]</span>' : `<span class="fail">[${dEduCount}/3 미달]</span>`}
                       ${missingDoubleEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingDoubleEdu.join(", ")})</span>` : ''}
                     - 교과내용 기본 (필수 6개 군 충족): ${doubleBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
@@ -642,7 +642,7 @@
 
             doubleDiagHtml = `
                 <div class="status-item">
-                    <h4>⚖️ 복수전공 이수 진단 (윤리교육)</h4>
+                    <h4>⚖️ 복수전공 이수 진단 (윤리)</h4>
                     - 교과교육 (필수 3과목): ${ethicsEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${eEduCount}/3 미달]</span>`}
                       ${missingEthicsEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingEthicsEdu.join(", ")})</span>` : ''}
                     - 교과내용 기본 Group 1 (택 3): ${ethicsGrp1Pass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${eGrp1Count}/3 미달]</span>`}
@@ -671,7 +671,7 @@
 
             doubleDiagHtml = `
                 <div class="status-item">
-                    <h4>🌍 복수전공 이수 진단 (일반사회교육)</h4>
+                    <h4>🌍 복수전공 이수 진단 (일반사회)</h4>
                     - 교과교육 (필수 3과목): ${socEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
                       ${missingSocEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingSocEdu.join(", ")})</span>` : ''}
                     - 교과내용 기본 (8과목 필수): ${socBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${sBasicCount}/${reqSocContentBasic} 미달]</span>`}
@@ -697,7 +697,7 @@
 
             doubleDiagHtml = `
                 <div class="status-item">
-                    <h4>🗺️ 복수전공 이수 진단 (지리교육)</h4>
+                    <h4>🗺️ 복수전공 이수 진단 (지리)</h4>
                     - 교과교육 (필수 3과목): ${geoEduPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
                       ${missingGeoEdu.length > 0 ? `<span class="missing-list">(미이수: ${missingGeoEdu.join(", ")})</span>` : ''}
                     - 교과내용 기본 (9과목 필수): ${geoBasicPass ? '<span class="pass">[충족]</span>' : `<span class="fail">[${gBasicCount}/${reqGeoContentBasic} 미달]</span>`}
@@ -745,7 +745,7 @@
                 </div>
             </div>
             <div class="status-item">
-                <h4>📖 본 전공 이수 진단 (역사교육)</h4>
+                <h4>📖 본 전공 이수 진단 </h4>
                 - 전공 필수 (${mBasicCount}/9과목): ${mBasicCount === 9 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}
                   ${missingMajorBasic.length > 0 ? `<span class="missing-list">(미이수: ${missingMajorBasic.join(", ")})</span>` : ''}
                 - 전공 선택 (${mSelectCount}/10과목 이상): ${mSelectCount >= 10 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}
@@ -762,3 +762,4 @@
 
 </body>
 </html>
+
