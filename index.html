@@ -2,51 +2,60 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>졸업 이수 학점 계산기 </title>
+    <title>🎓 졸업 이수 학점 계산기 </title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; line-height: 1.6; }
-        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; font-weight: 800; }
+        /* === 다크 골드 테마 적용 === */
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #121212; color: #e0e0e0; line-height: 1.6; }
+        .container { max-width: 950px; margin: auto; background: #1a1a1a; padding: 30px; border-radius: 12px; border: 2px solid #d4af37; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15); }
+        h2 { text-align: center; color: #f1c40f; margin-bottom: 25px; font-weight: 800; text-shadow: 1px 1px 5px rgba(0,0,0,0.5); }
         
-        .config-box { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 20px; justify-content: center; align-items: center; }
-        .config-box select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; }
+        .config-box { background: #222; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 20px; justify-content: center; align-items: center; border: 1px solid #444; }
+        .config-box label { color: #d4af37; }
+        .config-box select { padding: 6px; border-radius: 4px; border: 1px solid #d4af37; background: #333; color: white; font-weight: bold; }
 
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 10px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
-        .section-title { font-size: 1.2em; font-weight: bold; color: #2980b9; }
-        .sub-header { margin-top: 15px; background: #f0f8ff; padding: 10px; border-radius: 5px; font-weight: bold; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 10px; border-bottom: 2px solid #d4af37; padding-bottom: 5px; }
+        .section-title { font-size: 1.2em; font-weight: bold; color: #f1c40f; }
+        .sub-header { margin-top: 15px; background: #2a2a2a; padding: 10px; border-radius: 5px; font-weight: bold; color: #e0e0e0; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #d4af37; }
         
-        button.add-btn { background: #3498db; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; }
-        button.add-btn:hover { background: #2980b9; }
-        button.reset-btn { background: #e74c3c; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
-        button.reset-btn:hover { background: #c0392b; }
+        button.add-btn { background: linear-gradient(135deg, #d4af37, #f1c40f); color: #000; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4); }
+        button.add-btn:hover { background: linear-gradient(135deg, #f1c40f, #d4af37); transform: translateY(-1px); }
+        button.reset-btn { background: #c0392b; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold; margin-left: 10px; }
+        button.reset-btn:hover { background: #e74c3c; }
 
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; }
-        th { background: #f8f9fa; color: #555; font-size: 0.9em; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #222; }
+        th, td { border: 1px solid #444; padding: 10px; text-align: center; vertical-align: middle; }
+        th { background: #2a2a2a; color: #d4af37; font-size: 0.9em; }
         
-        select, input[type="text"], input[type="number"] { width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; text-align: center; }
-        .other-input { margin-top: 8px; border: 1px dashed #3498db; background-color: #f0f8ff; display: none; }
+        select, input[type="text"], input[type="number"] { width: 95%; padding: 8px; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; text-align: center; background: #333; color: #fff; }
+        .other-input { margin-top: 8px; border: 1px dashed #d4af37; background-color: #2a2a2a; display: none; }
         
-        .checkbox-group { display: flex; gap: 20px; justify-content: center; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 8px; font-weight: bold; flex-wrap: wrap; }
-        .checkbox-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-group { display: flex; gap: 20px; justify-content: center; padding: 15px; background: #222; border: 1px solid #444; border-radius: 8px; font-weight: bold; flex-wrap: wrap; }
+        .checkbox-group label { cursor: pointer; display: flex; align-items: center; gap: 5px; color: #ccc; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; accent-color: #d4af37; }
 
-        .auto-domain { font-weight: bold; color: #8e44ad; background: #f9ebff; padding: 4px 10px; border-radius: 12px; display: inline-block; }
+        .auto-domain { font-weight: bold; color: #f1c40f; background: #333; padding: 4px 10px; border-radius: 12px; display: inline-block; border: 1px solid #555; }
 
-        .result-panel { background: #2c3e50; color: white; padding: 25px; border-radius: 10px; margin-top: 35px; }
-        .result-title { font-size: 1.2em; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
+        .result-panel { background: #000; color: #fff; padding: 25px; border-radius: 10px; margin-top: 35px; border: 1px solid #d4af37; position: relative; }
+        .result-title { font-size: 1.2em; border-bottom: 1px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; color: #f1c40f; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; }
         .highlight { color: #f1c40f; font-weight: bold; font-size: 1.3em; }
-        .free-credit { color: #3498db; font-weight: bold; }
+        .free-credit { color: #e74c3c; font-weight: bold; }
         
-        .status-box { background: rgba(255,255,255,0.08); padding: 20px; border-radius: 8px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .status-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; }
-        .status-item h4 { margin: 0 0 10px 0; color: #3498db; border-bottom: 1px dashed #555; padding-bottom: 5px; }
+        .status-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; margin-top: 20px; display: flex; flex-direction: column; gap: 15px; border: 1px solid #333; }
+        .status-item { background: #1a1a1a; padding: 15px; border-radius: 6px; border: 1px solid #444; }
+        .status-item h4 { margin: 0 0 10px 0; color: #d4af37; border-bottom: 1px dashed #555; padding-bottom: 5px; }
         
-        .pass { color: #2ecc71; font-weight: bold; }
+        .pass { color: #2ecc71; font-weight: bold; text-shadow: 0 0 5px rgba(46, 204, 113, 0.4); }
         .fail { color: #e74c3c; font-weight: bold; }
-        .missing-list { color: #ff9ff3; font-size: 0.9em; margin-top: 5px; display: block; }
-        option:disabled { color: #ccc; font-style: italic; }
+        .missing-list { color: #bdc3c7; font-size: 0.9em; margin-top: 5px; display: block; font-style: italic; }
+        option:disabled { color: #777; font-style: italic; background: #222; }
+
+        /* === 졸업 학점 진행도 (Progress Bar) CSS === */
+        .progress-wrapper { margin-top: 30px; margin-bottom: 20px; padding: 0 15px; }
+        .progress-text { text-align: right; font-size: 0.9em; color: #d4af37; font-weight: bold; margin-bottom: 5px; }
+        .progress-container { width: 100%; background: #333; height: 20px; border-radius: 10px; position: relative; border: 1px solid #d4af37; box-shadow: inset 0 0 5px #000; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #8a6d1c, #f1c40f); border-radius: 10px; width: 0%; transition: width 0.8s ease-in-out; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        .progress-icon { position: absolute; top: -25px; width: 45px; height: 45px; transform: translateX(-50%); transition: left 0.8s ease-in-out; z-index: 10; left: 0%; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); }
     </style>
 </head>
 <body>
@@ -70,6 +79,7 @@
                 <option value="ethics">복수전공 - 윤리 (목표: 156학점)</option>
                 <option value="social">복수전공 - 일반사회 (목표: 156학점)</option>
                 <option value="geography">복수전공 - 지리 (목표: 156학점)</option>
+                <option value="other">복수전공 - 기타  (목표: 156학점)</option>
             </select>
         </div>
     </div>
@@ -79,12 +89,12 @@
     <div class="sub-header"><span>🌱 청람인성 (과목당 1학점, 3과목 필수 체크)</span></div>
     <div class="checkbox-group">
         <label><input type="checkbox" class="inseong-chk" value="교원 인성의 실천" data-credit="1" onchange="calculate()"> 교원 인성의 실천</label>
-        <label><input type="checkbox" class="inseong-chk" value="더불어 사는 시민 인성" data-credit="1" onchange="calculate()"> 더불어 사는 시민 인성(舊 공인함)</label>
+        <label><input type="checkbox" class="inseong-chk" value="더불어 사는 시민 인성" data-credit="1" onchange="calculate()"> 더불어 사는 시민 인성</label>
         <label><input type="checkbox" class="inseong-chk" value="청람인의 책임과 실천" data-credit="1" onchange="calculate()"> 청람인의 책임과 실천</label>
     </div>
 
     <div class="sub-header">
-        <span>🚀 교양 청람역량, 청람탐구</span>
+        <span>🚀 교양 (청람역량, 청람탐구)</span>
         <button class="add-btn" onclick="addGyoyangRow()">+ 추가</button>
     </div>
     <table>
@@ -130,7 +140,7 @@
         </div>
         <table>
             <colgroup><col width="75%"><col width="25%"></colgroup>
-            <thead><tr><th>과목 선택</th><th>학점</th></tr></thead>
+            <thead><tr><th>과목 선택/입력</th><th>학점</th></tr></thead>
             <tbody id="doubleMajorTable"></tbody>
         </table>
     </div>
@@ -139,6 +149,14 @@
         <div class="result-title">
             <span>📊 졸업 이수 현황 및 진단</span>
             <button class="reset-btn" onclick="resetData()">기록 초기화</button>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-text" id="progressText">0% 달성</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+                <img src="icon.png" class="progress-icon" id="progressIcon" alt="아이콘">
+            </div>
         </div>
         <div class="grid-3">
             <div>목표 총 학점<br><span id="targetTotal" class="highlight" style="color:white;">140</span>점</div>
@@ -223,7 +241,6 @@
             options += `</optgroup>`;
             
             select.innerHTML = options;
-            
             if (currentVal === "디지털 교육" && year === "2023") { select.value = ""; } 
             else { select.value = currentVal; }
         });
@@ -241,16 +258,21 @@
         } else {
             section.style.display = "block";
             if (isDouble === "computer") titleSpan.innerText = "💻 복수전공 영역 (컴퓨터)";
-            else if (isDouble === "ethics") titleSpan.innerText = "⚖️ 복수전공 영역 (윤리교육)";
+            else if (isDouble === "ethics") titleSpan.innerText = "⚖️ 복수전공 영역 (윤리)";
             else if (isDouble === "social") titleSpan.innerText = "🌍 복수전공 영역 (일반사회)";
-            else if (isDouble === "geography") titleSpan.innerText = "🗺️ 복수전공 영역 (지리교육)";
+            else if (isDouble === "geography") titleSpan.innerText = "🗺️ 복수전공 영역 (지리)";
+            else if (isDouble === "other") titleSpan.innerText = "💡 복수전공 영역 (기타)";
             
             const tbody = document.getElementById("doubleMajorTable");
-            const currentRows = Array.from(tbody.querySelectorAll("tr")).map(tr => ({
-                sel: tr.querySelector(".d-select").value,
-                other: tr.querySelector(".other-input").value,
-                cred: tr.querySelector(".d-credit").value
-            }));
+            const currentRows = Array.from(tbody.querySelectorAll("tr")).map(tr => {
+                const sel = tr.querySelector(".d-select");
+                const other = tr.querySelector(".other-input");
+                return {
+                    sel: sel ? sel.value : "other",
+                    other: other ? other.value : "",
+                    cred: tr.querySelector(".d-credit").value
+                };
+            });
             
             tbody.innerHTML = "";
             
@@ -260,12 +282,16 @@
                     const tr = tbody.lastElementChild;
                     const sel = tr.querySelector(".d-select");
                     
-                    let optionExists = Array.from(sel.options).some(opt => opt.value === val.sel);
-                    
-                    sel.value = optionExists ? val.sel : "";
-                    handleCommonSelectChange(sel, 'd-credit');
-                    if (sel.value === "other") tr.querySelector(".other-input").value = val.other;
-                    tr.querySelector(".d-credit").value = val.cred || "0";
+                    if (isDouble === "other") {
+                        tr.querySelector(".other-input").value = val.other || val.sel;
+                        tr.querySelector(".d-credit").value = val.cred || "0";
+                    } else if (sel) {
+                        let optionExists = Array.from(sel.options).some(opt => opt.value === val.sel);
+                        sel.value = optionExists ? val.sel : "";
+                        handleCommonSelectChange(sel, 'd-credit');
+                        if (sel.value === "other") tr.querySelector(".other-input").value = val.other;
+                        tr.querySelector(".d-credit").value = val.cred || "0";
+                    }
                 });
             } else {
                 for(let i=0; i<3; i++) addDoubleMajorRow();
@@ -355,53 +381,60 @@
     function addDoubleMajorRow() {
         const doubleType = document.getElementById("isDoubleMajor").value;
         const tbody = document.getElementById("doubleMajorTable");
-        let options = `<option value="">-- 과목 선택 --</option>`;
-        
-        if (doubleType === "computer") {
-            options += `<optgroup label="[교과교육 기본]">`;
-            doubleEduBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과교육 선택]">`;
-            doubleEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 기본 (택1 5개군 필수)]">`;
-            doubleContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 선택]">`;
-            doubleContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup>`;
-        } else if (doubleType === "ethics") {
-            options += `<optgroup label="[교과교육 필수]">`;
-            ethicsEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 기본 Group 1 (택 3)]">`;
-            ethicsContentGroup1.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 기본 Group 2 (택 3)]">`;
-            ethicsContentGroup2.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 선택]">`;
-            ethicsContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup>`;
-        } else if (doubleType === "social") {
-            options += `<optgroup label="[교과교육 필수]">`;
-            socEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과교육 선택 (택 1)]">`;
-            socEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 기본 (8과목 필수)]">`;
-            socContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 선택]">`;
-            socContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup>`;
-        } else if (doubleType === "geography") {
-            options += `<optgroup label="[교과교육 필수 (3과목)]">`;
-            geoEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 기본 (9과목 필수)]">`;
-            geoContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup><optgroup label="[교과내용 선택]">`;
-            geoContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
-            options += `</optgroup>`;
-        }
-        
-        options += `<optgroup label="[기타]"><option value="other">기타 (직접 입력)</option></optgroup>`;
         
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td><select class="d-select" onchange="handleCommonSelectChange(this, 'd-credit')">${options}</select><input type="text" class="other-input" placeholder="과목명 직접 입력"></td><td><input type="number" class="d-credit" value="0" min="0" oninput="calculate()"></td>`;
-        tbody.appendChild(tr); updateSelects();
+        
+        if (doubleType === "other") {
+            // '기타' 복수전공은 텍스트 입력창만 보여줌
+            tr.innerHTML = `<td><input type="text" class="other-input" placeholder="이수하신 과목명을 직접 입력하세요" style="display:block; width:100%;"></td><td><input type="number" class="d-credit" value="3" min="0" oninput="calculate()"></td>`;
+        } else {
+            let options = `<option value="">-- 과목 선택 --</option>`;
+            if (doubleType === "computer") {
+                options += `<optgroup label="[교과교육 기본]">`;
+                doubleEduBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과교육 선택]">`;
+                doubleEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 기본 (택1 5개군 필수)]">`;
+                doubleContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 선택]">`;
+                doubleContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup>`;
+            } else if (doubleType === "ethics") {
+                options += `<optgroup label="[교과교육 필수]">`;
+                ethicsEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 기본 Group 1 (택 3)]">`;
+                ethicsContentGroup1.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 기본 Group 2 (택 3)]">`;
+                ethicsContentGroup2.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 선택]">`;
+                ethicsContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup>`;
+            } else if (doubleType === "social") {
+                options += `<optgroup label="[교과교육 필수]">`;
+                socEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과교육 선택 (택 1)]">`;
+                socEduSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 기본 (8과목 필수)]">`;
+                socContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 선택]">`;
+                socContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup>`;
+            } else if (doubleType === "geography") {
+                options += `<optgroup label="[교과교육 필수 (3과목)]">`;
+                geoEduMandatory.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 기본 (9과목 필수)]">`;
+                geoContentBasic.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup><optgroup label="[교과내용 선택]">`;
+                geoContentSelect.forEach(m => options += `<option value="${m}">${m}</option>`);
+                options += `</optgroup>`;
+            }
+            options += `<optgroup label="[기타]"><option value="other">기타 (직접 입력)</option></optgroup>`;
+            
+            tr.innerHTML = `<td><select class="d-select" onchange="handleCommonSelectChange(this, 'd-credit')">${options}</select><input type="text" class="other-input" placeholder="과목명 직접 입력"></td><td><input type="number" class="d-credit" value="0" min="0" oninput="calculate()"></td>`;
+        }
+        
+        tbody.appendChild(tr); 
+        updateSelects();
     }
 
     function handleCommonSelectChange(selectElem, creditClass="m-credit") {
@@ -449,9 +482,16 @@
             major: Array.from(document.querySelectorAll("#majorTable tr")).map(tr => ({
                 course: tr.querySelector(".m-select").value, otherCourse: tr.querySelector(".other-input").value
             })),
-            double: Array.from(document.querySelectorAll("#doubleMajorTable tr")).map(tr => ({
-                course: tr.querySelector(".d-select").value, otherCourse: tr.querySelector(".other-input").value, credit: tr.querySelector(".d-credit").value
-            }))
+            double: Array.from(document.querySelectorAll("#doubleMajorTable tr")).map(tr => {
+                const select = tr.querySelector(".d-select");
+                const otherInput = tr.querySelector(".other-input");
+                const credit = tr.querySelector(".d-credit");
+                return {
+                    course: select ? select.value : "other",
+                    otherCourse: otherInput ? otherInput.value : "",
+                    credit: credit ? credit.value : "0"
+                };
+            })
         };
         localStorage.setItem("gradCalcData", JSON.stringify(data));
     }
@@ -504,10 +544,15 @@
                 data.double.forEach(row => {
                     addDoubleMajorRow(); const tr = document.getElementById("doubleMajorTable").lastElementChild;
                     const select = tr.querySelector(".d-select"); 
-                    let optExists = Array.from(select.options).some(opt => opt.value === row.course);
-                    select.value = optExists ? row.course : ""; 
-                    handleCommonSelectChange(select, "d-credit");
-                    tr.querySelector(".other-input").value = row.otherCourse || ""; tr.querySelector(".d-credit").value = row.credit || "0";
+                    if (select) {
+                        let optExists = Array.from(select.options).some(opt => opt.value === row.course);
+                        select.value = optExists ? row.course : "";
+                        if(row.course === "other") select.value = "other";
+                        handleCommonSelectChange(select, "d-credit");
+                    }
+                    const otherInput = tr.querySelector(".other-input");
+                    if (otherInput) otherInput.value = row.otherCourse || ""; 
+                    tr.querySelector(".d-credit").value = row.credit || "0";
                 });
             } else if (data.doubleMajor !== "no") { for(let i=0; i<3; i++) addDoubleMajorRow(); }
             
@@ -581,14 +626,23 @@
         let dSum = 0;
         const selectedDouble = new Set();
         document.querySelectorAll("#doubleMajorTable tr").forEach(tr => {
-            const val = tr.querySelector(".d-select").value;
+            const select = tr.querySelector(".d-select");
+            const val = select ? select.value : "other";
             const credit = parseFloat(tr.querySelector(".d-credit").value) || 0;
-            if (val) { dSum += credit; selectedDouble.add(val); }
+            if (val && val !== "other") selectedDouble.add(val);
+            dSum += credit;
         });
 
-        // 총 학점에 교육실습(pracSum) 포함
+        // 총 학점 계산
         const total = totalGyoyang + tSum + mSum + dSum + pracSum;
         document.getElementById("currentTotal").innerText = total;
+
+        // 🚀 진행도(Progress Bar) 업데이트 로직 🚀
+        let percent = (total / targetTotal) * 100;
+        if (percent > 100) percent = 100; // 최대 100%까지만 표시
+        document.getElementById("progressBar").style.width = percent + "%";
+        document.getElementById("progressIcon").style.left = percent + "%";
+        document.getElementById("progressText").innerText = `${Math.floor(percent)}% 달성`;
 
         const reqGyoyang = (year === "2024") ? 23 : 25;
         const reqTeachTotal = (year === "2024") ? 26 : 24;
@@ -705,6 +759,14 @@
                     - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${dSum >= reqDoubleTotal ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
                 </div>
             `;
+        } else if (isDouble === "other") {
+            doublePass = (dSum >= reqDoubleTotal);
+            doubleDiagHtml = `
+                <div class="status-item">
+                    <h4>💡 복수전공 이수 진단 (기타 학과)</h4>
+                    - 총 학점 (현재 ${dSum}/${reqDoubleTotal}): ${doublePass ? '<span class="pass">[충족]</span>' : `<span class="fail">[미달]</span>`}
+                </div>
+            `;
         }
 
         const freeTotal = total - (Math.min(totalGyoyang, reqGyoyang) + Math.min(tSum + pracSum, reqTeachTotal) + Math.min(mSum, 57) + (isDouble !== "no" ? Math.min(dSum, reqDoubleTotal) : 0));
@@ -719,9 +781,9 @@
         const resText = document.getElementById("finalResultText");
         if (total >= targetTotal) {
             if (allMet) { resText.innerHTML = "🎉 완벽합니다! 모든 졸업 요건 달성!"; resText.style.color = "#2ecc71"; } 
-            else { resText.innerHTML = "⚠️ 총 학점은 넘었으나 미이수 필수 조건이 있습니다."; resText.style.color = "#e67e22"; }
+            else { resText.innerHTML = "⚠️ 총 학점은 넘었으나 미이수 필수 조건이 있습니다."; resText.style.color = "#f1c40f"; }
         } else {
-            resText.innerHTML = `졸업까지 남은 총 학점: ${targetTotal - total}점`; resText.style.color = "#f1c40f";
+            resText.innerHTML = `졸업까지 남은 총 학점: ${targetTotal - total}점`; resText.style.color = "#e0e0e0";
         }
 
         let missingMajorBasic = majorBasic.filter(m => !selectedMajor.has(m));
@@ -737,7 +799,7 @@
                 <h4>🏫 교직 및 필수 요건 진단</h4>
                 - 교직소양 필수 (${teachManCount}/${reqTeachMan}): ${teachManCount >= reqTeachMan ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'} <br>
                 - 교직이론 선택 (${teachTheoCount}/6과목 이상): ${teachTheoCount >= 6 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'} <br>
-                <div style="margin-top: 8px; border-top: 1px dotted #ccc; padding-top: 8px;">
+                <div style="margin-top: 8px; border-top: 1px dotted #555; padding-top: 8px;">
                     - 교육실습1 (2학점): ${prac1 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}<br>
                     - 교육실습2 (2학점): ${prac2 ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}<br>
                     - 응급처치 (P/F): ${cpr ? '<span class="pass">[충족]</span>' : '<span class="fail">[미달]</span>'}<br>
@@ -762,4 +824,3 @@
 
 </body>
 </html>
-
